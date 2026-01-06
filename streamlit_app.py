@@ -36,6 +36,18 @@ def nearest_trading_day(idx: pd.DatetimeIndex, date_str: str) -> pd.Timestamp:
 try:
     data = load_validated_data()
 
+    # Debug: Show data head in the app
+    st.subheader("Raw Data Preview (for debugging)")
+    st.write(data.head())
+    st.write(f"VIX data shape: {data['VIX'].shape}")
+    st.write(f"VIX null count: {data['VIX'].isnull().sum()}")
+
+    # Check if VIX data is present
+    if data["VIX"].isnull().all():
+        st.warning("⚠️ VIX data could not be loaded. Please check data source or deployment environment.")
+    elif data["VIX"].empty:
+        st.warning("⚠️ VIX data is empty. Data fetching may have failed.")
+
     # Create figure with Dual Y-Axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
@@ -161,4 +173,7 @@ try:
     st.plotly_chart(fig, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Error: {e}")
+    import traceback
+    st.error(f"❌ Error loading or displaying data: {e}")
+    st.text("Full error details:")
+    st.code(traceback.format_exc())
