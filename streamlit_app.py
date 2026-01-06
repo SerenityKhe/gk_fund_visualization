@@ -57,17 +57,24 @@ def load_validated_data():
                 current_vix = max(10, min(50, current_vix + np.random.normal(0, 1)))
             vix_data.append(max(8, current_vix))
 
-        # Create interest rate data
+        # Create interest rate data with more dramatic changes
         ir_data = []
-        current_ir = 2.5
+        current_ir = 2.5  # Start at 2.5%
         for i, date in enumerate(dates):
-            if "2020-03" <= str(date) <= "2021-12":  # Low rates
-                current_ir = max(0, current_ir * 0.999 + np.random.normal(0, 0.1))
-            elif str(date) >= "2022-01":  # Rate hikes
-                current_ir = min(5.5, current_ir * 1.001 + np.random.normal(0, 0.1))
-            else:
-                current_ir = max(0, min(6, current_ir + np.random.normal(0, 0.05)))
-            ir_data.append(max(0, current_ir))
+            date_str = str(date)
+            if "2020-03" <= date_str <= "2021-12":  # COVID low rates
+                if "2020-03" <= date_str <= "2020-06":  # Sharp drop to zero
+                    current_ir = max(0.1, current_ir * 0.95)
+                else:  # Stay low
+                    current_ir = max(0.1, min(0.5, current_ir + np.random.normal(0, 0.05)))
+            elif date_str >= "2022-03":  # Aggressive rate hikes starting March 2022
+                if "2022-03" <= date_str <= "2023-12":  # Hiking cycle
+                    current_ir = min(5.5, current_ir * 1.002 + np.random.normal(0, 0.1))
+                else:  # Recent period
+                    current_ir = max(4.0, min(5.5, current_ir + np.random.normal(0, 0.05)))
+            else:  # Pre-COVID normal
+                current_ir = max(1.5, min(3.0, current_ir + np.random.normal(0, 0.02)))
+            ir_data.append(max(0.1, current_ir))
 
         fallback_df = pd.DataFrame({
             "VIX": vix_data,
@@ -88,6 +95,15 @@ def nearest_trading_day(idx: pd.DatetimeIndex, date_str: str) -> pd.Timestamp:
 
 try:
     data = load_validated_data()
+    
+    # Debug information
+    st.write("**Data Debug Info:**")
+    st.write(f"Data shape: {data.shape}")
+    st.write(f"Columns: {list(data.columns)}")
+    st.write(f"VIX range: {data['VIX'].min():.2f} - {data['VIX'].max():.2f}")
+    st.write(f"Interest Rate range: {data['Interest_Rate'].min():.2f} - {data['Interest_Rate'].max():.2f}")
+    st.write("Sample data:")
+    st.write(data.head())
 
     # Create figure with Dual Y-Axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
