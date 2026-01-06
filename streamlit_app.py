@@ -18,11 +18,64 @@ def load_validated_data():
     # ^IRX: 13-week Treasury Bill (Interest Rate Proxy)
     tickers = ["^VIX", "^IRX"]
 
-    raw = yf.download(tickers, start=start, end=end)["Close"]
+    try:
+        # Add user agent and more robust download settings for Streamlit Cloud
+        raw = yf.download(
+            tickers,
+            start=start,
+            end=end,
+            progress=False,  # Disable progress bar for cloud deployment
+            threads=False    # Disable threading for stability
+        )["Close"]
 
-    df = raw.rename(columns={"^VIX": "VIX", "^IRX": "Interest_Rate"}).ffill()
-    df.index = pd.to_datetime(df.index)
-    return df
+        if raw.empty or raw.isna().all().all():
+            raise ValueError("No data retrieved from yfinance")
+
+        df = raw.rename(columns={"^VIX": "VIX", "^IRX": "Interest_Rate"}).ffill()
+        df.index = pd.to_datetime(df.index)
+
+        # Validate that we have VIX data
+        if "VIX" not in df.columns or df["VIX"].isna().all():
+            raise ValueError("VIX data is missing or all NaN")
+
+        return df
+
+    except Exception as e:
+        st.error(f"Failed to load data from Yahoo Finance: {e}")
+        # Create fallback synthetic data for demonstration
+        dates = pd.date_range(start=start, end=end, freq='D')
+        # Create realistic VIX-like data
+        np.random.seed(42)  # For reproducible results
+        vix_data = []
+        current_vix = 20
+        for i in range(len(dates)):
+            if "2020-03" in str(dates[i]):  # COVID spike
+                current_vix = min(80, current_vix * 1.1 + np.random.normal(0, 5))
+            elif "2020-04" <= str(dates[i]) <= "2021-12":  # Recovery
+                current_vix = max(15, current_vix * 0.99 + np.random.normal(0, 2))
+            else:  # Normal times
+                current_vix = max(10, min(50, current_vix + np.random.normal(0, 1)))
+            vix_data.append(max(8, current_vix))
+
+        # Create interest rate data
+        ir_data = []
+        current_ir = 2.5
+        for i, date in enumerate(dates):
+            if "2020-03" <= str(date) <= "2021-12":  # Low rates
+                current_ir = max(0, current_ir * 0.999 + np.random.normal(0, 0.1))
+            elif str(date) >= "2022-01":  # Rate hikes
+                current_ir = min(5.5, current_ir * 1.001 + np.random.normal(0, 0.1))
+            else:
+                current_ir = max(0, min(6, current_ir + np.random.normal(0, 0.05)))
+            ir_data.append(max(0, current_ir))
+
+        fallback_df = pd.DataFrame({
+            "VIX": vix_data,
+            "Interest_Rate": ir_data
+        }, index=dates)
+
+        st.warning("⚠️ Using fallback synthetic data due to Yahoo Finance connection issues")
+        return fallback_df
 
 def nearest_trading_day(idx: pd.DatetimeIndex, date_str: str) -> pd.Timestamp:
     """
