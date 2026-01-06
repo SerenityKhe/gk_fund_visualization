@@ -95,7 +95,7 @@ def nearest_trading_day(idx: pd.DatetimeIndex, date_str: str) -> pd.Timestamp:
 
 try:
     data = load_validated_data()
-    
+
     # Debug information
     st.write("**Data Debug Info:**")
     st.write(f"Data shape: {data.shape}")
@@ -108,13 +108,13 @@ try:
     # Create figure with Dual Y-Axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # 1) VIX (Primary axis) - Made highly visible with bright red color and thick line
+    # 1) VIX (Primary axis) - Dark blue color and thick line
     fig.add_trace(
         go.Scatter(
             x=data.index,
             y=data["VIX"],
             name="VIX Volatility Index",
-            line=dict(color="#FF0000", width=4),  # Bright red, thick line
+            line=dict(color="#003366", width=4),  # Dark blue, thick line
         ),
         secondary_y=False,
     )
@@ -217,7 +217,7 @@ try:
         title_text="<b>VIX Volatility Index</b>",
         secondary_y=False,
         range=[0, 105],
-        color="#FF0000",  # Match the bright red VIX line
+        color="#003366",  # Match the dark blue VIX line
     )
 
     fig.update_yaxes(
