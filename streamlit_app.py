@@ -136,19 +136,19 @@ try:
             "start": "2019-01-01",
             "end": "2020-01-31",
             "label": "Pre-COVID Baseline<br>(2019)",
-            "color": "rgba(173, 216, 230, 0.2)",  # More transparent
+            "color": "rgba(144,238,144,0.18)",  # LightGreen
         },
         {
             "start": "2020-02-01",
             "end": "2021-12-31",
             "label": "Pandemic & Stimulus Regime",
-            "color": "rgba(255, 192, 203, 0.2)",  # More transparent
+            "color": "rgba(255,160,122,0.18)",  # LightSalmon
         },
         {
             "start": "2022-01-01",
             "end": "2024-12-31",
             "label": "Monetary Tightening / Post-COVID Regime",
-            "color": "rgba(144, 238, 144, 0.2)",  # More transparent
+            "color": "rgba(135,206,250,0.18)",  # LightSkyBlue
         },
     ]
 
