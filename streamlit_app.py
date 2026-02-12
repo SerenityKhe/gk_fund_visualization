@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 
 # --- Page Setup ---
 st.set_page_config(page_title="Thesis: Macro Regime Definition", layout="wide")
-st.title("📊 Visualization Techniques: Macroeconomic Regime Definition")
+st.title("Figure 1. Macroeconomic Regime Definition and Structural Breaks (2019-2024) ")
 
 @st.cache_data
 def load_validated_data():
@@ -96,14 +96,6 @@ def nearest_trading_day(idx: pd.DatetimeIndex, date_str: str) -> pd.Timestamp:
 try:
     data = load_validated_data()
 
-    # Debug information
-    st.write("**Data Debug Info:**")
-    st.write(f"Data shape: {data.shape}")
-    st.write(f"Columns: {list(data.columns)}")
-    st.write(f"VIX range: {data['VIX'].min():.2f} - {data['VIX'].max():.2f}")
-    st.write(f"Interest Rate range: {data['Interest_Rate'].min():.2f} - {data['Interest_Rate'].max():.2f}")
-    st.write("Sample data:")
-    st.write(data.head())
 
     # Create figure with Dual Y-Axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
