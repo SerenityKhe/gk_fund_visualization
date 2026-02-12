@@ -159,11 +159,20 @@ try:
             fillcolor=r["color"],
             opacity=1,
             layer="below",
-            line_width=1.5,
-            line_color="black",
+            line_width=0,
             annotation_text=r["label"],
             annotation_position="top left",
             annotation_font=dict(size=13, color="black", family="Arial Black"),
+        )
+
+    # Add vertical dashed lines at regime boundaries
+    regime_boundaries = ["2020-02-01", "2022-01-01"]
+    for boundary in regime_boundaries:
+        fig.add_vline(
+            x=boundary,
+            line_width=2,
+            line_dash="dash",
+            line_color="black",
         )
 
     # --- Corrected + data-driven annotations (no hard-coded y) ---
