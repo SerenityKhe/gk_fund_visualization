@@ -14,24 +14,27 @@ def load_validated_data():
     start = "2019-01-01"
     end = "2024-12-31"
 
-    # ^VIX: Cboe Volatility Index
-    # ^IRX: 13-week Treasury Bill (Interest Rate Proxy)
-    tickers = ["^VIX", "^IRX"]
-
     try:
-        # Add user agent and more robust download settings for Streamlit Cloud
-        raw = yf.download(
-            tickers,
-            start=start,
-            end=end,
-            progress=False,  # Disable progress bar for cloud deployment
-            threads=False    # Disable threading for stability
-        )["Close"]
+        # Download each ticker separately to avoid multi-ticker column naming
+        # differences across yfinance versions (^VIX vs VIX, MultiIndex, etc.)
+        def _fetch_close(ticker):
+            raw = yf.download(ticker, start=start, end=end, progress=False, threads=False)
+            if raw.empty:
+                raise ValueError(f"No data for {ticker}")
+            # Handle both Series and single-column DataFrame returns
+            close = raw["Close"] if "Close" in raw.columns else raw.iloc[:, 0]
+            # Flatten in case yfinance returns a 1-column DataFrame instead of Series
+            if isinstance(close, pd.DataFrame):
+                close = close.iloc[:, 0]
+            return close
 
-        if raw.empty or raw.isna().all().all():
-            raise ValueError("No data retrieved from yfinance")
+        vix_close = _fetch_close("^VIX")
+        irx_close = _fetch_close("^IRX")
 
-        df = raw.rename(columns={"^VIX": "VIX", "^IRX": "Interest_Rate"}).ffill()
+        df = pd.DataFrame({
+            "VIX": vix_close,
+            "Interest_Rate": irx_close,
+        }).ffill()
         df.index = pd.to_datetime(df.index)
 
         # Validate that we have VIX data
